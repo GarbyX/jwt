@@ -1,5 +1,7 @@
 package com.garby.jwt.restcontrollers;
 
+import com.garby.jwt.exceptions.UnauthorizedException;
+import com.garby.jwt.models.UserCredentials;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.web.bind.annotation.*;
@@ -8,8 +10,12 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/users")
 public class UserController {
 
+    // The /login endpoint takes a UserCredentials object as a request body and validates the credentials.
+    // If the credentials are valid, it generates a JWT token using the jjwt library.
+    // The token is signed with a secret key, which should be securely stored in a configuration file or environment variable.
+
         @PostMapping("/login")
-        public String login(@RequestBody UserCredentials credentials) {
+        public String login(@RequestBody UserCredentials credentials) throws UnauthorizedException {
             // TODO: Validate user credentials from a database or any other source
 
             // For simplicity, we'll use a fixed user/password combination
@@ -29,13 +35,19 @@ public class UserController {
             }
         }
 
+       // The /profile endpoint requires an Authorization header with a valid JWT token.
+       // It extracts the token from the header, verifies and parses it using the same secret key, and
+       // retrieves the username from the token's claims.
+       // This method can be customized to fetch the user profile information from database or any other source.
+
+
         @GetMapping("/profile")
         public String getProfile(@RequestHeader("Authorization") String authorizationHeader) {
             // Extract the token from the Authorization header
             String token = authorizationHeader.substring("Bearer ".length());
 
             // Verify and parse the JWT token
-            String username = Jwts.parser()
+            String username = Jwts.parser()        // TODO .parser() and .setSigningKey("string") have been deprecated. Find updated solutions
                     .setSigningKey("secretKey")
                     .parseClaimsJws(token)
                     .getBody()
